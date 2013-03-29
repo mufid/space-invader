@@ -20,9 +20,9 @@ GLfloat	ballX =			 200.0f;		// x awal bola
 GLfloat ballY =			 200.0f;		// y awal bola
 
 // How many spaces to move each frame
-GLfloat step = 4.0f;
-GLfloat ballStepX = -4.0f;
-GLfloat ballStepY = -4.0f;
+GLfloat step = 0.10f;
+GLfloat ballStepX = -0.02f;
+GLfloat ballStepY = -0.02f;
 
 // keep track of the window height and width
 GLfloat windowWidth;
