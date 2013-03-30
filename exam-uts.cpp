@@ -5,10 +5,6 @@
 // ========================================================
 //                         (c) 2013
 
-
-/* Basic 2D pong with OpenGL & GLUT */
-
-
 #include <windows.h>
 #include <GL/glut.h>
 #include <stdio.h>
@@ -24,6 +20,8 @@ GLfloat step = 0.30f;
 GLfloat ballStepX = -0.02f;
 GLfloat ballStepY = -0.02f;
 
+int     moveTimer;
+
 // keep track of the window height and width
 GLfloat windowWidth;
 GLfloat windowHeight;
@@ -37,6 +35,7 @@ int maxAlien;
 bool alienAlive[50];
 GLfloat alienPosX[50];
 GLfloat alienPosY[50];
+int alienType[50];
 
 // Informasi terkait dengan tembakan sang player
 bool bulletAlive;
@@ -46,6 +45,14 @@ GLfloat bulletY;
 // Informasi terkait dengan skor dan live player
 int playerScore = 0;
 
+// Informasi displayobject
+// 0: Alien tipe 1
+// 1: Alien tipe 2
+// 2: Alien tipe 3
+// 3: Alien tipe 4
+// 4: UFO
+// 5: Player
+// 6: Efek meledak
 GLuint displayObjects[50];
 
 bool gameover = false, first = true;
@@ -60,7 +67,65 @@ void createAlienDisplayList() {
     // Ukuran alien: 25x25 piksel
     // Baseline di layar adalah KIRI BAWAH
     displayObjects[0] = glGenLists (1);
+    displayObjects[1] = glGenLists (1);
+    displayObjects[2] = glGenLists (1);
+    displayObjects[3] = glGenLists (1);
     glNewList (displayObjects[0], GL_COMPILE);
+
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,25);
+        glVertex2i(25,25);
+        glEnd ( );
+
+        glColor3f(0.0f, 0.7f, 0.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,10);
+        glVertex2i(10,10);
+        glEnd ( );
+
+    glEndList ( );
+
+    glNewList (displayObjects[1], GL_COMPILE);
+
+        glColor3f(0.0f, 0.0f, 1.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,25);
+        glVertex2i(25,25);
+        glEnd ( );
+
+        glColor3f(0.0f, 0.0f, 0.65f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,10);
+        glVertex2i(10,10);
+        glEnd ( );
+
+    glEndList ( );
+
+    glNewList (displayObjects[2], GL_COMPILE);
+
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,25);
+        glVertex2i(25,25);
+        glEnd ( );
+
+        glColor3f(0.0f, 0.7f, 0.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,10);
+        glVertex2i(10,10);
+        glEnd ( );
+
+    glEndList ( );
+
+    glNewList (displayObjects[3], GL_COMPILE);
+
         glColor3f(0.0f, 1.0f, 0.0f);
         glBegin (GL_POLYGON);
         glVertex2i(0,0);
@@ -99,8 +164,8 @@ void drawScoreboard() {
         //glVertex2i(0, windowHeight-40);
         //glVertex2i(windowWidth, windowHeight-40);
     glEnd();
-    //drawStringText("Skor:", windowHeight - 35, 20);
-    //drawIntegerText(playerScore, 100, windowHeight - 35);
+    drawStringText("Skor:", 20, windowHeight - 25);
+    drawIntegerText(playerScore + 100, 100, windowHeight - 25);
 }
 
 void drawIntegerText(int what, int posX, int posY) {
@@ -141,7 +206,7 @@ void renderAliens() {
         if (alienAlive[i]) {
             glPushMatrix();    
             glTranslatef(alienPosX[i], alienPosY[i], 0.0); //translate origin (-150, 150)
-            glCallList (displayObjects[0]);
+            glCallList (displayObjects[alienType[i]]);
             glPopMatrix(); //move origin back to center
         }
     }
@@ -183,7 +248,8 @@ void collisionCheck() {
         // Ingat, ukuran alien adalah 25x25 piksel.
         // Cek apakah ada peluru yang mengenai mereka
         if (antara(bulletX, alienPosX[i], alienPosX[i] + 25) &&
-            antara(bulletY, alienPosY[i], alienPosY[i] + 25)) {
+            antara(bulletY, alienPosY[i], alienPosY[i] + 25) &&
+            alienAlive[i]) {
             bulletAlive = false;
             collisionNotYetFound = false;
             alienAlive[i] = false;
@@ -230,16 +296,19 @@ void OnPlay() {
 
 // Melakukan inisialisasi posisi alien dan UFO
 void initAliens() {
-    maxAlien = 7;
-    for (int i = 0; i < 7; i++) {
-        alienAlive[i] = true;
-        alienPosX[i] = i*70.0f + 50.0f;
-        alienPosY[i] = 300.0f;
+    maxAlien = 7*4;
+    for (int j = 0; j < 4; j++) {
+        for (int i = 0; i < 7; i++) {
+            int k = j*4+i;
+            alienAlive[k] = true;
+            alienPosX[k] = i*70.0f + 50.0f;
+            alienPosY[k] = 150.0f + j * 25.0f;
+            alienType[k] = j;
+        }
     }
 }
 
-void Init()
-{
+void Init() {
     initAliens();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
