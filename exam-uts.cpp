@@ -12,7 +12,7 @@
 #include <windows.h>
 #include <GL/glut.h>
 #include <stdio.h>
-
+#include <math.h>
 
 GLfloat cpuPaddle =		 175.0f;		// y awal paddle cpu
 GLfloat playerPaddle =	 175.0f;		// y awal paddle player
@@ -20,7 +20,7 @@ GLfloat	ballX =			 200.0f;		// x awal bola
 GLfloat ballY =			 200.0f;		// y awal bola
 
 // How many spaces to move each frame
-GLfloat step = 0.10f;
+GLfloat step = 0.30f;
 GLfloat ballStepX = -0.02f;
 GLfloat ballStepY = -0.02f;
 
@@ -29,7 +29,7 @@ GLfloat windowWidth;
 GLfloat windowHeight;
 
 int cpuScore = 0;
-int playerScore = 0;
+
 char score[50];
 
 // Informasi memori terkait dengan alien
@@ -43,9 +43,16 @@ bool bulletAlive;
 GLfloat bulletX;
 GLfloat bulletY;
 
+// Informasi terkait dengan skor dan live player
+int playerScore = 0;
+
 GLuint displayObjects[50];
 
 bool gameover = false, first = true;
+
+bool antara(float val, float x1, float x2) {
+    return (x1 <= val && val <= x2);
+}
 
 void createAlienDisplayList() {
     glPointSize(3.0f);
@@ -71,17 +78,58 @@ void createAlienDisplayList() {
     glEndList ( );
 }
 
-void DisplayText(char *teks)
-{
+void drawStringText(char *teks, int posX, int posY) {
     char *p;
-    glClear(GL_COLOR_BUFFER_BIT);
 
 	glColor3f(0.0f, 0.5f, 1.0f);
-    glRasterPos2f(windowWidth/2-180, windowHeight/2);         // posisikan teks
+    glRasterPos2f(posX, posY);
     for (p = teks; *p; p++)
-           glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p); // teks ditampilkan perkarakter
-    glutSwapBuffers();       
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p); // teks ditampilkan perkarakter
+    
 }
+
+void drawIntegerText(int, int, int);
+
+void drawScoreboard() {
+    
+    glBegin(GL_LINE);
+        glColor3f(0.9f, 0.9f, 0.9f);
+        glVertex2i(0, 100);
+        glVertex2i(500, 100);
+        //glVertex2i(0, windowHeight-40);
+        //glVertex2i(windowWidth, windowHeight-40);
+    glEnd();
+    //drawStringText("Skor:", windowHeight - 35, 20);
+    //drawIntegerText(playerScore, 100, windowHeight - 35);
+}
+
+void drawIntegerText(int what, int posX, int posY) {
+    char p[50];
+    int residu = what;
+    int printNow;
+    int max = ceil(log((float) what));
+    int i = max;
+    while (residu > 0) {
+        printNow = residu % 10;
+        residu = residu / 10;
+        switch (printNow) {
+        case 0: p[i] = '0'; break;
+        case 1: p[i] = '1'; break;
+        case 2: p[i] = '2'; break;
+        case 3: p[i] = '3'; break;
+        case 4: p[i] = '4'; break;
+        case 5: p[i] = '5'; break;
+        case 6: p[i] = '6'; break;
+        case 7: p[i] = '7'; break;
+        case 8: p[i] = '8'; break;
+        case 9: p[i] = '9'; break;
+        }
+        i--;
+    }
+    p[max+1] = 0;
+    drawStringText(p, posX, posY);
+}
+
 
 // Instruksi untuk alien agar bergerak tahap demi tahap
 void moveAliens() {
@@ -104,31 +152,55 @@ void renderAliens() {
 void DisplayArena() {
 	glClear(GL_COLOR_BUFFER_BIT);
 
+    // Routine alien agak rumit, jadi dipisah aja
     renderAliens();
 
-	glColor3f(0.0f, 0.5f, 1.0f);
+	// Player paddle
+    glColor3f(0.0f, 0.5f, 1.0f);
+	glRectf(playerPaddle - 20 , 20 , playerPaddle + 20, 40);
 
-	    // Player paddle
-	    glRectf(playerPaddle - 20 , 20 , playerPaddle + 20, 40);
+	// Peluru, hanya digambar kalau memang
+    // pelurunya ditembakkan
 
-	    glColor3f(1.0f, 0.0f, 0.0f);
-
-	    // Bola
-	    glRectf(ballX, ballY, ballX + 5, ballY + 5);
+    if (bulletAlive) {
         glBegin(GL_POINTS);
         glColor3f(1.0, 1.0, 1.0);
         glVertex2f(bulletX, bulletY);
         glEnd();
+    }
+    drawScoreboard();
 	glutSwapBuffers();
 }
+
 // Cek apakah ada peluru yang mengenai alien ataupun UFO
 void collisionCheck() {
+    // Do no collision check if there's no bullet
+    if (!bulletAlive) return;
+
+    bool collisionNotYetFound = true;
+    // Iterasi setiap alien, apakah ada peluru yang mengenai mereka?
+    for (int i = 0; i < maxAlien && collisionNotYetFound; i++) {
+        // Ingat, ukuran alien adalah 25x25 piksel.
+        // Cek apakah ada peluru yang mengenai mereka
+        if (antara(bulletX, alienPosX[i], alienPosX[i] + 25) &&
+            antara(bulletY, alienPosY[i], alienPosY[i] + 25)) {
+            bulletAlive = false;
+            collisionNotYetFound = false;
+            alienAlive[i] = false;
+            playerScore++;
+            printf("Alien kena! %d\n", i);
+        }
+    }
 }
 
+// Menggerakkan alien, posisi player, peluru, dan kebutuhan lainnya
+// yang bersifat prarender
 void OnPlay() {
-    // do nothing lol development mode lol
     moveAliens();
     collisionCheck();
+
+    // ===========================================================
+    // Bagian pengaturan bullet. Sedang ditembak, mau nembak?
     if (GetAsyncKeyState(VK_SPACE) & !bulletAlive) {
         bulletX = playerPaddle;
         bulletY = 20;
@@ -140,7 +212,9 @@ void OnPlay() {
     if (bulletAlive && bulletY > windowHeight) {
         bulletAlive = false;
     }
-	// Cek key input
+
+    // ============================================================
+	// Bagian pengaturan posisi pemain
     
 	if(GetAsyncKeyState(VK_LEFT))
 		playerPaddle -= step;
@@ -150,71 +224,11 @@ void OnPlay() {
 		playerPaddle += step;
 	
 
+    // Waktunya untuk melakukan redisplay! Spartaa!
     glutPostRedisplay(); return;
-	
-	//bola balik arah ketika menyentuh paddle
-	if(ballX >= windowWidth-20 && ballX < windowWidth - 10)	
-	{
-		if(ballY >= playerPaddle && ballY <= playerPaddle + 50) // bola menyentuh posisi paddle player
-		{
-			ballStepX = -ballStepX;
-			MessageBeep(0);
-			ballStepX = ballStepX - 0.1f;	// tambah kecepatan bola
-			if(ballStepY < 0)
-			{
-				ballStepY -= 0.01f;
-			}
-			else
-			{
-				ballStepY += 0.01f;
-			}
-		}
-	}
-
-
-	if(ballX <= 20 && ballX > 10)  // paddle cpu
-	{
-		if(ballY >= cpuPaddle && ballY <= cpuPaddle + 50)
-			ballStepX = -ballStepX;
-			MessageBeep(0);
-	}
-
-
-	// bola mantul
-	if(ballY > windowHeight || ballY - 5 < 0)
-		ballStepY = -ballStepY;
-
-	// gerakan paddle cpu
-	if(ballY < cpuPaddle + 25)
-	{
-		cpuPaddle -= step;
-	}
-	else
-	{
-		cpuPaddle += step;
-	}
-
-	// cek posisi bola
-	if(ballX > windowWidth)
-	{
-        DisplayText("Permainan berakhir, Anda kalah!");
-		gameover = true;
-	}
-
-	if(ballX < 0)
-	{
-        DisplayText("Permainan berakhir, Anda menang!");
-		gameover = true;
-	}
-
-
-	ballX += ballStepX;
-	ballY += ballStepY;
-
-    glutPostRedisplay();
- 
 }
 
+// Melakukan inisialisasi posisi alien dan UFO
 void initAliens() {
     maxAlien = 7;
     for (int i = 0; i < 7; i++) {

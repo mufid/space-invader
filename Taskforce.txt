@@ -2,9 +2,20 @@ TODO LIST:
 
 - Make an alien positioned with x,y    [OK]
 - Make a bullet move                   [OK]
-- Make an alien die because of bullet
-- Collision detection
+- Make an alien die because of bullet  [OK]
+- Collision detection                  [OK]
+- Scoring board
 - Multiple alien
 - Multiple alien in a row
-- Multiple alien moving
-- UFO alien, moving randomly
+- Multiple alien moving within a row, going down after complete
+- UFO alien
+- UFO alien bisa mati
+- UFO alien bisa gerak
+- Texturize first alien
+- Texturize second alien
+- Texturize third alien
+- Texturize fourth alien
+- Texturize UFO
+- Add background
+- Main menu
+- README.pdf: tentang step, pengaruhnya ke FPS
