@@ -1,0 +1,10 @@
+TODO LIST:
+
+- Make an alien positioned with x,y    [OK]
+- Make a bullet move                   [OK]
+- Make an alien die because of bullet
+- Collision detection
+- Multiple alien
+- Multiple alien in a row
+- Multiple alien moving
+- UFO alien, moving randomly

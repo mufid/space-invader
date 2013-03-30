@@ -32,7 +32,44 @@ int cpuScore = 0;
 int playerScore = 0;
 char score[50];
 
+// Informasi memori terkait dengan alien
+int maxAlien;
+bool alienAlive[50];
+GLfloat alienPosX[50];
+GLfloat alienPosY[50];
+
+// Informasi terkait dengan tembakan sang player
+bool bulletAlive;
+GLfloat bulletX;
+GLfloat bulletY;
+
+GLuint displayObjects[50];
+
 bool gameover = false, first = true;
+
+void createAlienDisplayList() {
+    glPointSize(3.0f);
+    // Buat alien jenis pertama
+    // Ukuran alien: 25x25 piksel
+    // Baseline di layar adalah KIRI BAWAH
+    displayObjects[0] = glGenLists (1);
+    glNewList (displayObjects[0], GL_COMPILE);
+        glColor3f(0.0f, 1.0f, 0.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,25);
+        glVertex2i(25,25);
+        glEnd ( );
+
+        glColor3f(0.0f, 0.7f, 0.0f);
+        glBegin (GL_POLYGON);
+        glVertex2i(0,0);
+        glVertex2i(0,10);
+        glVertex2i(10,10);
+        glEnd ( );
+
+    glEndList ( );
+}
 
 void DisplayText(char *teks)
 {
@@ -40,50 +77,80 @@ void DisplayText(char *teks)
     glClear(GL_COLOR_BUFFER_BIT);
 
 	glColor3f(0.0f, 0.5f, 1.0f);
-    glRasterPos2f(windowWidth/2-180, windowHeight/2);  //posisikan teks
+    glRasterPos2f(windowWidth/2-180, windowHeight/2);         // posisikan teks
     for (p = teks; *p; p++)
-           glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p); //teks ditampilkan perkarakter
+           glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *p); // teks ditampilkan perkarakter
     glutSwapBuffers();       
 }
 
+// Instruksi untuk alien agar bergerak tahap demi tahap
+void moveAliens() {
+}
+
+// Routine untuk menggambar alien
+void renderAliens() {
+    for (int i = 0; i < maxAlien; i++) {
+        if (alienAlive[i]) {
+            glPushMatrix();    
+            glTranslatef(alienPosX[i], alienPosY[i], 0.0); //translate origin (-150, 150)
+            glCallList (displayObjects[0]);
+            glPopMatrix(); //move origin back to center
+        }
+    }
+
+}
+
 // Gambar arena
-void DisplayArena()
-{
+void DisplayArena() {
 	glClear(GL_COLOR_BUFFER_BIT);
+
+    renderAliens();
 
 	glColor3f(0.0f, 0.5f, 1.0f);
 
-	    // CPU paddle
-	    glRectf(10, cpuPaddle, 20, cpuPaddle + 50);
-
 	    // Player paddle
-	    glRectf(windowWidth - 20, playerPaddle, windowWidth - 10, playerPaddle + 50);
+	    glRectf(playerPaddle - 20 , 20 , playerPaddle + 20, 40);
 
 	    glColor3f(1.0f, 0.0f, 0.0f);
 
 	    // Bola
 	    glRectf(ballX, ballY, ballX + 5, ballY + 5);
-
+        glBegin(GL_POINTS);
+        glColor3f(1.0, 1.0, 1.0);
+        glVertex2f(bulletX, bulletY);
+        glEnd();
 	glutSwapBuffers();
 }
+// Cek apakah ada peluru yang mengenai alien ataupun UFO
+void collisionCheck() {
+}
 
-void OnPlay()
-{
+void OnPlay() {
+    // do nothing lol development mode lol
+    moveAliens();
+    collisionCheck();
+    if (GetAsyncKeyState(VK_SPACE) & !bulletAlive) {
+        bulletX = playerPaddle;
+        bulletY = 20;
+        bulletAlive = true;
+    }
+    if (bulletAlive) {
+        bulletY += step;
+    }
+    if (bulletAlive && bulletY > windowHeight) {
+        bulletAlive = false;
+    }
 	// Cek key input
     
-	if(playerPaddle < 350)
-	{
-	if(GetAsyncKeyState(VK_UP))
-		playerPaddle += step;
-	}
-
-	if(playerPaddle > 0)
-	{
-	if(GetAsyncKeyState(VK_DOWN))
+	if(GetAsyncKeyState(VK_LEFT))
 		playerPaddle -= step;
-	}
+	
 
+	if(GetAsyncKeyState(VK_RIGHT))
+		playerPaddle += step;
+	
 
+    glutPostRedisplay(); return;
 	
 	//bola balik arah ketika menyentuh paddle
 	if(ballX >= windowWidth-20 && ballX < windowWidth - 10)	
@@ -148,9 +215,18 @@ void OnPlay()
  
 }
 
+void initAliens() {
+    maxAlien = 7;
+    for (int i = 0; i < 7; i++) {
+        alienAlive[i] = true;
+        alienPosX[i] = i*70.0f + 50.0f;
+        alienPosY[i] = 300.0f;
+    }
+}
 
 void Init()
 {
+    initAliens();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
 
@@ -186,9 +262,10 @@ void ChangeSize(GLsizei w, GLsizei h)
 int main()
 {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
-	glutInitWindowSize(400, 400);
+	glutInitWindowSize(700, 500);
 	glutCreateWindow("Simple Pong Game");
     Init();
+    createAlienDisplayList();
 	glutDisplayFunc(DisplayArena);
 	glutReshapeFunc(ChangeSize);
     glutIdleFunc(OnPlay);
