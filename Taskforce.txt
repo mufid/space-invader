@@ -7,8 +7,9 @@ TODO LIST:
 - Scoring board                        [OK]
 - Multiple alien                       [OK]
 - Multiple alien in a row              [OK]
-- Multiple alien texture
+- Multiple alien displaylist test      [OK]
 - Multiple alien moving within a row, going down after complete
+- Alien able to fire
 - UFO alien
 - UFO alien bisa mati
 - UFO alien bisa gerak
@@ -23,4 +24,4 @@ TODO LIST:
 - Ability to 1 high score
 - Add background
 - Main menu
-- README.pdf: tentang step, pengaruhnya ke FPS
+- README.pdf: tentang step, pengaruhnya ke FPS, makelibnya bmp

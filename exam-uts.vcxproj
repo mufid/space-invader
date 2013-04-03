@@ -80,6 +80,8 @@
     <Text Include="Taskforce.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RgbImage.h" />
+    <ClInclude Include="sprite.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>

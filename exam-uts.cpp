@@ -9,6 +9,7 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <math.h>
+#include "sprite.h"
 
 GLfloat cpuPaddle =		 175.0f;		// y awal paddle cpu
 GLfloat playerPaddle =	 175.0f;		// y awal paddle player
@@ -44,6 +45,7 @@ GLfloat bulletY;
 
 // Informasi terkait dengan skor dan live player
 int playerScore = 0;
+int nyawaPlayer = 3;
 
 // Informasi displayobject
 // 0: Alien tipe 1
@@ -62,7 +64,7 @@ bool antara(float val, float x1, float x2) {
 }
 
 void createAlienDisplayList() {
-    glPointSize(3.0f);
+    
     // Buat alien jenis pertama
     // Ukuran alien: 25x25 piksel
     // Baseline di layar adalah KIRI BAWAH
@@ -71,21 +73,17 @@ void createAlienDisplayList() {
     displayObjects[2] = glGenLists (1);
     displayObjects[3] = glGenLists (1);
     glNewList (displayObjects[0], GL_COMPILE);
-
+        glPointSize(3.5f);
         glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,25);
-        glVertex2i(25,25);
+        glBegin (GL_POINTS);
+        for (int i = 0; i < 18/2; i++) {
+            for (int j = 0; j < 31/2; j++) {
+                if (spriteObject0[i*2][j*2] == 1) {
+                    glVertex2i(j*3-8, (18/2-i)*3);
+                }
+            }
+        }
         glEnd ( );
-
-        glColor3f(0.0f, 0.7f, 0.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,10);
-        glVertex2i(10,10);
-        glEnd ( );
-
     glEndList ( );
 
     glNewList (displayObjects[1], GL_COMPILE);
@@ -108,14 +106,14 @@ void createAlienDisplayList() {
 
     glNewList (displayObjects[2], GL_COMPILE);
 
-        glColor3f(0.0f, 1.0f, 0.0f);
+        glColor3f(1.0f, 1.0f, 0.0f);
         glBegin (GL_POLYGON);
         glVertex2i(0,0);
         glVertex2i(0,25);
         glVertex2i(25,25);
         glEnd ( );
 
-        glColor3f(0.0f, 0.7f, 0.0f);
+        glColor3f(0.5f, 0.0f, 0.0f);
         glBegin (GL_POLYGON);
         glVertex2i(0,0);
         glVertex2i(0,10);
@@ -126,14 +124,14 @@ void createAlienDisplayList() {
 
     glNewList (displayObjects[3], GL_COMPILE);
 
-        glColor3f(0.0f, 1.0f, 0.0f);
+        glColor3f(0.0f, 0.7f, 0.0f);
         glBegin (GL_POLYGON);
         glVertex2i(0,0);
         glVertex2i(0,25);
         glVertex2i(25,25);
         glEnd ( );
 
-        glColor3f(0.0f, 0.7f, 0.0f);
+        glColor3f(0.0f, 0.5f, 0.0f);
         glBegin (GL_POLYGON);
         glVertex2i(0,0);
         glVertex2i(0,10);
@@ -156,13 +154,12 @@ void drawStringText(char *teks, int posX, int posY) {
 void drawIntegerText(int, int, int);
 
 void drawScoreboard() {
-    
-    glBegin(GL_LINE);
+    glBegin(GL_POLYGON);
         glColor3f(0.9f, 0.9f, 0.9f);
-        glVertex2i(0, 100);
-        glVertex2i(500, 100);
-        //glVertex2i(0, windowHeight-40);
-        //glVertex2i(windowWidth, windowHeight-40);
+        glVertex2i(0, windowHeight - 30);
+        glVertex2i(windowWidth, windowHeight - 30);
+        glVertex2i(windowWidth, windowHeight - 32);
+        glVertex2i(0, windowHeight - 32);
     glEnd();
     drawStringText("Skor:", 20, windowHeight - 25);
     drawIntegerText(playerScore + 100, 100, windowHeight - 25);
@@ -198,6 +195,7 @@ void drawIntegerText(int what, int posX, int posY) {
 
 // Instruksi untuk alien agar bergerak tahap demi tahap
 void moveAliens() {
+
 }
 
 // Routine untuk menggambar alien
@@ -299,7 +297,8 @@ void initAliens() {
     maxAlien = 7*4;
     for (int j = 0; j < 4; j++) {
         for (int i = 0; i < 7; i++) {
-            int k = j*4+i;
+            int k = j*7+i;
+            printf("rendering: %d\n", k);
             alienAlive[k] = true;
             alienPosX[k] = i*70.0f + 50.0f;
             alienPosY[k] = 150.0f + j * 25.0f;
