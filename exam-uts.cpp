@@ -87,20 +87,18 @@ void createAlienDisplayList() {
     glEndList ( );
 
     glNewList (displayObjects[1], GL_COMPILE);
-
-        glColor3f(0.0f, 0.0f, 1.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,25);
-        glVertex2i(25,25);
-        glEnd ( );
-
         glColor3f(0.0f, 0.0f, 0.65f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,10);
-        glVertex2i(10,10);
+
+        glBegin (GL_POINTS);
+        for (int i = 0; i < 14/2; i++) {
+            for (int j = 0; j < 31/2; j++) {
+                if (spriteObject1[i*2][j*2] == 1) {
+                    glVertex2i(j*3-8, (14/2-i)*3);
+                }
+            }
+        }
         glEnd ( );
+
 
     glEndList ( );
 
