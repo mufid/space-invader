@@ -102,6 +102,7 @@ char spriteObject3[33][74] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 };
 
+// Player
 char spriteObject4[25][74] = {
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -148,12 +149,16 @@ void createAlienDisplayList() {
     displayObjects[1] = glGenLists (1);
     displayObjects[2] = glGenLists (1);
     displayObjects[3] = glGenLists (1);
+    displayObjects[4] = glGenLists (1);
+    displayObjects[5] = glGenLists (1);
 
     // Alien 1
     glNewList (displayObjects[0], GL_COMPILE);
-        glPointSize(3.5f);
+        
         glColor3f(0.0f, 1.0f, 0.0f);
+        glPointSize(3.5f);
         glBegin (GL_POINTS);
+        
         for (int i = 0; i < 18/2; i++) {
             for (int j = 0; j < 31/2; j++) {
                 if (spriteObject0[i*2][j*2] == 1) {
@@ -168,6 +173,7 @@ void createAlienDisplayList() {
     glNewList (displayObjects[1], GL_COMPILE);
         glColor3f(1.0f, 1.0f, 1.0f);
         glColor3f(0.0f, 0.0f, 0.65f);
+        glPointSize(3.5f);
         glBegin (GL_POINTS);
         for (int i = 0; i < 14/2; i++) {
             for (int j = 0; j < 31/2; j++) {
@@ -183,6 +189,7 @@ void createAlienDisplayList() {
     glNewList (displayObjects[2], GL_COMPILE);
         glColor3f(1.0f, 1.0f, 1.0f);
         glColor3f(0.5f, 0.0f, 0.0f);
+        glPointSize(3.5f);
         glBegin (GL_POINTS);
         for (int i = 0; i < 18/2; i++) {
             for (int j = 0; j < 31/2; j++) {
@@ -210,6 +217,22 @@ void createAlienDisplayList() {
         glVertex2i(10,10);
         glEnd ( );
 
+    glEndList ( );
+
+    // 4 = Player
+    glNewList (displayObjects[4], GL_COMPILE);
+        glColor3f(1.0f, 1.0f, 1.0f);
+        glColor3f(0.5f, 0.0f, 0.0f);
+        glPointSize(3.5f);
+        glBegin (GL_POINTS);
+        for (int i = 0; i < 25/4; i++) {
+            for (int j = 0; j < 74/4; j++) {
+                if (spriteObject4[i*4][j*4] == 1) {
+                    glVertex2i(j*3-5, (18/2-i)*3);
+                }
+            }
+        }
+        glEnd ( );
     glEndList ( );
 }
 

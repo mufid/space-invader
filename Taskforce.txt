@@ -8,8 +8,12 @@ TODO LIST:
 - Multiple alien                       [OK]
 - Multiple alien in a row              [OK]
 - Multiple alien displaylist test      [OK]
-- Multiple alien moving within a row, going down after complete
-- Alien able to fire
+- Multiple alien moving within a row, going down after complete [OK]
+- Alien able to fire                   [OK]
+- Could be game over                   [OK]
+- Could continue when game over        [OK]
+- Could go to new level                [OK]
+- Dynamic per level alien shoot tick   [OK]
 - UFO alien
 - UFO alien bisa mati
 - UFO alien bisa gerak
@@ -21,8 +25,8 @@ TODO LIST:
 - Texturize first alien                [OK]
 - Texturize second alien               [OK]
 - Texturize third alien                [OK]
-- Texturize UFO
+- Texturize UFO                        [OK]
 - Texturize scoreboard
-- Ability to 1 high score
+- Ability to 1 high score              [OK]
 - Add background
 - README.pdf: tentang step, pengaruhnya ke FPS, makelibnya bmp
