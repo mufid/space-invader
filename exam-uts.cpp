@@ -9,6 +9,7 @@
 #include <GL/glut.h>
 #include <stdio.h>
 #include <math.h>
+#include <thread>
 #include "sprite.h"
 
 GLfloat cpuPaddle =		 175.0f;		// y awal paddle cpu
@@ -47,96 +48,20 @@ GLfloat bulletY;
 int playerScore = 0;
 int nyawaPlayer = 3;
 
-// Informasi displayobject
-// 0: Alien tipe 1
-// 1: Alien tipe 2
-// 2: Alien tipe 3
-// 3: Alien tipe 4
-// 4: UFO
-// 5: Player
-// 6: Efek meledak
-GLuint displayObjects[50];
-
 bool gameover = false, first = true;
 
-bool antara(float val, float x1, float x2) {
+// Hanya fungsi biasa yang mengecek apakah val ada di antara
+// x1_ dan x2_
+bool antara(float val, float x1_, float x2_) {
+    float x1, x2;
+    if (x1_ > x2_) {
+        x2 = x1_;
+        x1 = x2_;
+    } else {
+        x1 = x1_;
+        x2 = x2_;
+    }
     return (x1 <= val && val <= x2);
-}
-
-void createAlienDisplayList() {
-    
-    // Buat alien jenis pertama
-    // Ukuran alien: 25x25 piksel
-    // Baseline di layar adalah KIRI BAWAH
-    displayObjects[0] = glGenLists (1);
-    displayObjects[1] = glGenLists (1);
-    displayObjects[2] = glGenLists (1);
-    displayObjects[3] = glGenLists (1);
-    glNewList (displayObjects[0], GL_COMPILE);
-        glPointSize(3.5f);
-        glColor3f(0.0f, 1.0f, 0.0f);
-        glBegin (GL_POINTS);
-        for (int i = 0; i < 18/2; i++) {
-            for (int j = 0; j < 31/2; j++) {
-                if (spriteObject0[i*2][j*2] == 1) {
-                    glVertex2i(j*3-8, (18/2-i)*3);
-                }
-            }
-        }
-        glEnd ( );
-    glEndList ( );
-
-    glNewList (displayObjects[1], GL_COMPILE);
-        glColor3f(0.0f, 0.0f, 0.65f);
-
-        glBegin (GL_POINTS);
-        for (int i = 0; i < 14/2; i++) {
-            for (int j = 0; j < 31/2; j++) {
-                if (spriteObject1[i*2][j*2] == 1) {
-                    glVertex2i(j*3-8, (14/2-i)*3);
-                }
-            }
-        }
-        glEnd ( );
-
-
-    glEndList ( );
-
-    glNewList (displayObjects[2], GL_COMPILE);
-
-        glColor3f(1.0f, 1.0f, 0.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,25);
-        glVertex2i(25,25);
-        glEnd ( );
-
-        glColor3f(0.5f, 0.0f, 0.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,10);
-        glVertex2i(10,10);
-        glEnd ( );
-
-    glEndList ( );
-
-    glNewList (displayObjects[3], GL_COMPILE);
-
-        glColor3f(0.0f, 0.7f, 0.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,25);
-        glVertex2i(25,25);
-        glEnd ( );
-
-        glColor3f(0.0f, 0.5f, 0.0f);
-        glBegin (GL_POLYGON);
-        glVertex2i(0,0);
-        glVertex2i(0,10);
-        glVertex2i(10,10);
-        glEnd ( );
-
-    glEndList ( );
 }
 
 void drawStringText(char *teks, int posX, int posY) {
@@ -241,9 +166,19 @@ void collisionCheck() {
     bool collisionNotYetFound = true;
     // Iterasi setiap alien, apakah ada peluru yang mengenai mereka?
     for (int i = 0; i < maxAlien && collisionNotYetFound; i++) {
+        int l = 25;
         // Ingat, ukuran alien adalah 25x25 piksel.
         // Cek apakah ada peluru yang mengenai mereka
-        if (antara(bulletX, alienPosX[i], alienPosX[i] + 25) &&
+        switch (alienType[i]) {
+            // Length: 25
+            case 0: l = 25; break;
+            // Length: 37
+            case 1: l = 37; break;
+            // Length: 37
+            case 2: l = 37; break;
+        }
+
+        if (antara(bulletX, alienPosX[i], alienPosX[i] + l) &&
             antara(bulletY, alienPosY[i], alienPosY[i] + 25) &&
             alienAlive[i]) {
             bulletAlive = false;
@@ -300,7 +235,8 @@ void initAliens() {
             alienAlive[k] = true;
             alienPosX[k] = i*70.0f + 50.0f;
             alienPosY[k] = 150.0f + j * 25.0f;
-            alienType[k] = j;
+            int type = (j > 1) ? j - 1 : j;
+            alienType[k] = type;
         }
     }
 }
@@ -343,9 +279,9 @@ int main()
 {
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 	glutInitWindowSize(700, 500);
-	glutCreateWindow("Simple Pong Game");
+	glutCreateWindow("Space Invader - Mid-term Exam Muhammad Mufid Afif (1006671766)");
     Init();
-    createAlienDisplayList();
+    createAlienDisplayList(); // Refactor, di sprite.h
 	glutDisplayFunc(DisplayArena);
 	glutReshapeFunc(ChangeSize);
     glutIdleFunc(OnPlay);

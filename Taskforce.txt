@@ -15,13 +15,14 @@ TODO LIST:
 - UFO alien bisa gerak
 - Visual FX: alien destroyed
 - Visual FX: UFO destroyed
-- Texturize first alien
-- Texturize second alien
-- Texturize third alien
-- Texturize fourth alien
+- Sound FX: Alien attack
+- Sound FX: Alien+Ufo Die
+- Sound FX: Player die
+- Texturize first alien                [OK]
+- Texturize second alien               [OK]
+- Texturize third alien                [OK]
 - Texturize UFO
 - Texturize scoreboard
 - Ability to 1 high score
 - Add background
-- Main menu
 - README.pdf: tentang step, pengaruhnya ke FPS, makelibnya bmp
