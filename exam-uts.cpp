@@ -16,7 +16,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-GLfloat playerPaddle =	 175.0f;		// y awal paddle player
+GLfloat playerPaddle =	 175.0f;		// posisi awal paddle player
 
 // How many spaces to move each frame
 // Ubah step, sesuaikan dengan performa komputer.
@@ -47,7 +47,6 @@ GLfloat  alienBulletX[10];
 GLfloat  alienBulletY[10];
 bool     alienBulletActive[10];
 bool     mati = false;
-bool     ufo  = false;
 bool     movementLeft = false;
 
 // Informasi terkait dengan tembakan sang player
@@ -55,11 +54,22 @@ bool    bulletAlive;
 GLfloat bulletX;
 GLfloat bulletY;
 
+// Informasi terkai dengan objek spesial: UFO
+bool     ufo  = false;
+GLfloat  ufoX = -30;
+int      ufoTick = 10000;
+
 // Informasi terkait dengan skor dan live player
 int playerScore = 0;
 int nyawaPlayer = 3;
 int highScore   = 0;
 int level       = 1;
+
+// Posisi derbis / mayat / efek mati
+int     nextDerbis = 0;
+bool    derbisAlive[10];
+GLfloat derbisX[10];
+GLfloat derbisY[10];
 
 bool gameover = false, first = true;
 
@@ -115,6 +125,29 @@ void sceneGameOver() {
     drawStringText("Press SPACE to Continue.", 50, 250);
 }
 
+// Dalam satu kali level, akan ada UFO yang muncul, tetapi entah kapan UFO
+// itu akan muncul..
+void deployUFO(int levelTarget) {
+    if (level != levelTarget) return;
+    ufoX = -100;
+    ufo = true;
+}
+
+void removeDerbis(int derbisNum) {
+    printf("Derbis %d removed\n", derbisNum);
+    derbisAlive[derbisNum] = false;
+}
+
+void addDerbis(GLfloat posX, GLfloat posY) {
+    if (nextDerbis >= 10) nextDerbis = 0;
+    printf("Derbis #%d added at %d, %d\n", nextDerbis, posX, posY);
+    derbisX[nextDerbis]     = posX;
+    derbisY[nextDerbis]     = posY;
+    derbisAlive[nextDerbis] = true;
+    glutTimerFunc(1000, removeDerbis, nextDerbis);
+    nextDerbis++;
+}
+
 void drawIntegerText(int what, int posX, int posY) {
     char p[50];
     int residu = what;
@@ -149,7 +182,8 @@ void drawIntegerText(int what, int posX, int posY) {
 
 
 // Instruksi untuk alien agar bergerak tahap demi tahap
-// Warning: O(n)
+// Warning: O(n), tetapi tidak masalah karena hanya
+// dikerjakan beberapa saat saja
 void moveAliens(int value) {
     printf("Tick from: moveAliens\n");
 
@@ -206,6 +240,13 @@ void renderAliens() {
         }
     }
 
+    // Render UFO
+    if (!ufo) return;
+
+    glPushMatrix();    
+    glTranslatef(ufoX, windowHeight - 70, 0.0);
+    glCallList (displayObjects[3]);
+    glPopMatrix(); //move origin back to center
 }
 
 // Gambar arena
@@ -241,6 +282,17 @@ void DisplayArena() {
     glCallList (displayObjects[4]);
     glPopMatrix(); //move origin back to center
 
+    // Render derbis
+    for (int i = 0; i < 10; i++) {
+        if (derbisAlive[i]) {
+            glPushMatrix();    
+            glTranslatef(derbisX[i], derbisY[i], 0.0); //translate origin (-150, 150)
+            glCallList (displayObjects[5]);
+            glPopMatrix(); //move origin back to center
+        }
+    }
+
+
 	// Peluru, hanya digambar kalau memang
     // pelurunya ditembakkan
 
@@ -252,11 +304,14 @@ void DisplayArena() {
     }
     drawScoreboard();
 	glutSwapBuffers();
+
 }
 void initAliens(void);
 void resetPlayer(void);
+void deployUFO(int);
 
 // Mulai game dari awal lagi
+// Atau, pertama kalinya mulai game
 void gameStartOver() {
     resetPlayer();
     initAliens();
@@ -267,6 +322,7 @@ void gameStartOver() {
     alienShotTickMax = 1000;
     gameover = false;
     computeNextAlienShot();
+    glutTimerFunc(ufoTick * ((rand() % 3) + 1), deployUFO, level);
 }
 
 // Mengecek masih ada alien yang hidup
@@ -291,6 +347,7 @@ void nextLevelCheck() {
 
 void addRandomAlienBullet(int value);
 
+// Menghitung kapan alien akan nembak
 void computeNextAlienShot() {
     int alienShotTick = (float) alienShotTickMax * (float) (rand() % 10);
     glutTimerFunc(alienShotTick, addRandomAlienBullet, 0);
@@ -318,7 +375,7 @@ void collisionCheck() {
     // Iterasi setiap alien, apakah ada peluru yang mengenai mereka?
     for (int i = 0; i < maxAlien && collisionNotYetFound; i++) {
         int l = 25;
-        // Ingat, ukuran alien adalah 25x25 piksel.
+        // Ingat, ukuran alien berbeda-beda
         // Cek apakah ada peluru yang mengenai mereka
         switch (alienType[i]) {
             // Length: 25
@@ -335,15 +392,24 @@ void collisionCheck() {
             bulletAlive = false;
             collisionNotYetFound = false;
             alienAlive[i] = false;
-
+            addDerbis(alienPosX[i], alienPosY[i]);
             playerScore += (alienType[i] + 1) * 10;
             printf("Alien kena! %d\n", i);
-            if (playerScore > highScore) {
-                highScore = playerScore;
-            }
             nextLevelCheck();
         }
     }
+
+    // Collision check for bullet targeting UFO
+    if (ufo && 
+        antara(bulletX, ufoX, ufoX + 52) &&
+        antara(bulletY, windowHeight - 70, windowHeight - 70 + 50)) {
+        ufo = false;
+        bulletAlive = false;
+        playerScore += rand() % 10 * 200;
+    }
+
+    // Mutakhirkan skor tertinggi, jika harus
+    if (playerScore > highScore) highScore = playerScore;
 }
 
 void addRandomAlienBullet(int value) {
@@ -426,6 +492,13 @@ void OnPlay() {
         }
     }
 
+    // UFO Part
+    if (ufo) {
+        float divisor = (level > 3) ? 1.0 : 1.0 / (float) (3.0 - (float) level);
+        ufoX += step * divisor;
+        if (ufoX > windowWidth) ufo = false;
+    }
+
     // Waktunya untuk melakukan redisplay! Spartaa!
     glutPostRedisplay(); return;
 }
@@ -448,9 +521,8 @@ void initAliens() {
 }
 
 void Init() {
-    initAliens();
+    gameStartOver();
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    computeNextAlienShot();
 }
 
 void resetPlayer() {

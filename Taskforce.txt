@@ -14,19 +14,16 @@ TODO LIST:
 - Could continue when game over        [OK]
 - Could go to new level                [OK]
 - Dynamic per level alien shoot tick   [OK]
-- UFO alien
-- UFO alien bisa mati
-- UFO alien bisa gerak
-- Visual FX: alien destroyed
-- Visual FX: UFO destroyed
-- Sound FX: Alien attack
-- Sound FX: Alien+Ufo Die
-- Sound FX: Player die
+- UFO alien                            [OK]
+- UFO alien bisa mati                  [OK]
+- UFO alien bisa gerak                 [OK]
+- Visual FX: alien destroyed           [OK]
+- Visual FX: UFO destroyed             [OK]
+- Visual FX: Adding derbis             [OK]
 - Texturize first alien                [OK]
 - Texturize second alien               [OK]
 - Texturize third alien                [OK]
 - Texturize UFO                        [OK]
 - Texturize scoreboard
 - Ability to 1 high score              [OK]
-- Add background
 - README.pdf: tentang step, pengaruhnya ke FPS, makelibnya bmp
